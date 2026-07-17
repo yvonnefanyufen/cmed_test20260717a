@@ -1,0 +1,765 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- 讓網頁寬度配合手機螢幕 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>經絡穴位互動遊戲</title>
+
+    <style>
+        /* ==================================================
+           第一區：全域基礎設定
+           ================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+
+            font-family:
+                "Noto Sans TC",
+                "Microsoft JhengHei",
+                Arial,
+                sans-serif;
+
+            color: #203936;
+
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(192, 224, 211, 0.55),
+                    transparent 38%
+                ),
+                linear-gradient(
+                    135deg,
+                    #f7f1e4 0%,
+                    #e4f1ec 100%
+                );
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        /* ==================================================
+           第二區：整個遊戲主區域
+           ================================================== */
+
+        #game-container {
+            width: min(100%, 820px);
+            padding: clamp(20px, 5vw, 42px);
+
+            background-color: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(55, 100, 91, 0.15);
+            border-radius: 28px;
+
+            box-shadow:
+                0 20px 50px rgba(40, 72, 66, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+            backdrop-filter: blur(10px);
+        }
+
+
+        /* ==================================================
+           第三區：標題與分數資訊
+           ================================================== */
+
+        #game-header {
+            margin-bottom: 26px;
+            text-align: center;
+        }
+
+        #game-title {
+            margin: 0 0 10px;
+            color: #254b45;
+            font-size: clamp(28px, 5vw, 42px);
+            letter-spacing: 0.12em;
+        }
+
+        #game-description {
+            margin: 0;
+            color: #66827c;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        #status-panel {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .status-item {
+            flex: 1;
+            margin: 0;
+            padding: 14px 18px;
+
+            color: #31534d;
+            background-color: #edf6f2;
+            border: 1px solid #d2e6de;
+            border-radius: 16px;
+
+            font-size: clamp(14px, 3vw, 17px);
+            font-weight: 700;
+        }
+
+
+        /* ==================================================
+           第四區：經絡遊戲畫面
+           ================================================== */
+
+        #meridian-area {
+            position: relative;
+
+            min-height: 260px;
+            margin-bottom: 26px;
+            padding: 42px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    rgba(255, 255, 255, 0.5),
+                    rgba(255, 255, 255, 0.5)
+                ),
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(111, 159, 149, 0.05) 0,
+                    rgba(111, 159, 149, 0.05) 10px,
+                    transparent 10px,
+                    transparent 20px
+                );
+
+            border: 1px solid #d8e8e1;
+            border-radius: 24px;
+        }
+
+        #meridian-line {
+            position: absolute;
+            top: 50%;
+            left: 13%;
+            right: 13%;
+
+            height: 8px;
+            margin: 0;
+
+            border: 0;
+            border-radius: 999px;
+
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    #4b8a7d 0,
+                    #4b8a7d 16px,
+                    #77b2a5 16px,
+                    #77b2a5 25px
+                );
+
+            box-shadow:
+                0 0 0 4px rgba(105, 165, 151, 0.12),
+                0 5px 15px rgba(50, 105, 94, 0.18);
+
+            transform: translateY(-50%);
+        }
+
+        .acupoint-slot {
+            position: relative;
+            z-index: 1;
+
+            width: clamp(92px, 18vw, 126px);
+            aspect-ratio: 1;
+            margin: 0;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+
+            color: #56756e;
+            background-color: rgba(250, 253, 251, 0.96);
+            border: 3px dashed #83aa9f;
+            border-radius: 50%;
+
+            box-shadow:
+                0 8px 20px rgba(60, 103, 94, 0.12),
+                inset 0 0 0 7px rgba(219, 237, 230, 0.6);
+
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .slot-label {
+            padding: 4px;
+
+            font-size: clamp(12px, 2.3vw, 15px);
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+
+        /* ==================================================
+           第五區：訊息提示區
+           ================================================== */
+
+        #message-area {
+            margin-bottom: 26px;
+            padding: 15px 20px;
+
+            color: #69807b;
+            background-color: rgba(239, 246, 243, 0.75);
+            border-left: 5px solid #9cc3b7;
+            border-radius: 12px;
+
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        #message-text {
+            margin: 0;
+        }
+
+
+        /* ==================================================
+           第六區：穴位貼紙盒
+           ================================================== */
+
+        #sticker-box {
+            padding: 22px;
+
+            background-color: #f5eee0;
+            border: 1px solid #e8dcc6;
+            border-radius: 22px;
+
+            box-shadow: inset 0 2px 7px rgba(99, 76, 45, 0.06);
+        }
+
+        #sticker-box-title {
+            margin: 0 0 18px;
+
+            color: #63543f;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        #stickerArea {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .sticker {
+            min-height: 74px;
+            padding: 14px;
+
+            color: #315b52;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #ffffff 0%,
+                    #e7f3ee 100%
+                );
+
+            border: 2px solid #afd1c6;
+            border-radius: 18px;
+
+            box-shadow:
+                0 7px 14px rgba(63, 104, 95, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+            font: inherit;
+            font-size: clamp(17px, 3vw, 21px);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+
+            cursor: pointer;
+        }
+
+        /*
+            貼紙被搬到圓形空位後，
+            縮小尺寸以避免撐破圓形空位。
+        */
+        .acupoint-slot .sticker {
+            width: 76%;
+            min-height: 48px;
+            padding: 8px;
+
+            border-radius: 14px;
+            font-size: clamp(14px, 2.5vw, 17px);
+        }
+
+
+        /* ==================================================
+           第七區：貼紙選取狀態
+           ================================================== */
+
+        .selected {
+            border-color: #ffd83d;
+            outline: 3px solid rgba(255, 216, 61, 0.45);
+
+            box-shadow:
+                0 0 8px rgba(255, 216, 61, 0.85),
+                0 0 20px rgba(255, 216, 61, 0.45);
+        }
+
+
+        /* ==================================================
+           第八區：手機響應式設計
+           ================================================== */
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+                align-items: flex-start;
+            }
+
+            #game-container {
+                padding: 22px 16px;
+                border-radius: 22px;
+            }
+
+            #status-panel {
+                flex-direction: column;
+            }
+
+            #meridian-area {
+                min-height: 350px;
+                padding: 34px 16px;
+                flex-direction: column;
+            }
+
+            #meridian-line {
+                top: 13%;
+                bottom: 13%;
+                left: 50%;
+                right: auto;
+
+                width: 8px;
+                height: auto;
+
+                background:
+                    repeating-linear-gradient(
+                        180deg,
+                        #4b8a7d 0,
+                        #4b8a7d 16px,
+                        #77b2a5 16px,
+                        #77b2a5 25px
+                    );
+
+                transform: translateX(-50%);
+            }
+
+            #stickerArea {
+                grid-template-columns: 1fr;
+            }
+
+            .sticker {
+                min-height: 62px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 整個遊戲的主要容器 -->
+    <main id="game-container" class="game-container">
+
+        <!-- 遊戲標題與狀態資訊 -->
+        <header id="game-header" class="game-header">
+            <h1 id="game-title" class="game-title">
+                經絡尋穴
+            </h1>
+
+            <p id="game-description" class="game-description">
+                將正確的穴位貼紙放到經絡線上的空位，
+                完成中醫經絡挑戰。
+            </p>
+
+            <!-- 分數與時間顯示區 -->
+            <section id="status-panel" class="status-panel">
+                <p id="score-display" class="status-item">
+                    分數：0 分
+                </p>
+
+                <p id="time-display" class="status-item">
+                    時間：00：00
+                </p>
+            </section>
+        </header>
+
+        <!-- 經絡線遊戲區域 -->
+        <section id="meridian-area" class="meridian-area">
+
+            <!-- 起點穴位空位 -->
+            <figure id="startSlot" class="acupoint-slot start-slot">
+                <figcaption
+                    id="start-slot-label"
+                    class="slot-label"
+                >
+                    起點穴位
+                </figcaption>
+            </figure>
+
+            <!-- 經絡線 -->
+            <hr id="meridian-line" class="meridian-line">
+
+            <!-- 終點穴位空位 -->
+            <figure id="endSlot" class="acupoint-slot end-slot">
+                <figcaption
+                    id="end-slot-label"
+                    class="slot-label"
+                >
+                    終點穴位
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- 訊息提示區 -->
+        <aside id="message-area" class="message-area">
+            <p id="message-text" class="message-text">
+                提示訊息：請選擇一張穴位貼紙，再點擊空位。
+            </p>
+        </aside>
+
+        <!-- 穴位貼紙盒 -->
+        <section id="sticker-box" class="sticker-box">
+            <h2 id="sticker-box-title" class="sticker-box-title">
+                穴位貼紙盒
+            </h2>
+
+            <nav
+                id="stickerArea"
+                class="sticker-area"
+                aria-label="穴位貼紙"
+            >
+                <button
+                    id="sticker-zhongfu"
+                    class="sticker acupoint-sticker"
+                    type="button"
+                    data-acupoint="中府"
+                >
+                    中府
+                </button>
+
+                <button
+                    id="sticker-shaoshang"
+                    class="sticker acupoint-sticker"
+                    type="button"
+                    data-acupoint="少商"
+                >
+                    少商
+                </button>
+
+                <button
+                    id="sticker-taiyuan"
+                    class="sticker acupoint-sticker"
+                    type="button"
+                    data-acupoint="太淵"
+                >
+                    太淵
+                </button>
+            </nav>
+        </section>
+    </main>
+
+
+    <script>
+        /* ==================================================
+           1. 全域狀態管理（State）
+           ================================================== */
+
+        // 紀錄玩家目前選取了哪一張貼紙的 ID
+        let selectedSticker = null;
+
+        // 紀錄起點空位目前放置了哪一張貼紙的 ID
+        let startSlotSticker = null;
+
+        // 紀錄終點空位目前放置了哪一張貼紙的 ID
+        let endSlotSticker = null;
+
+        // 紀錄目前分數，初始值為數字 100
+        let score = 100;
+
+        // 紀錄目前經過時間，初始值為數字 0
+        let time = 0;
+
+        // 紀錄目前遊戲狀態
+        let gameState = 'playing';
+
+
+        /* ==================================================
+           2. 應用程式初始化（Init）
+           ================================================== */
+
+        /**
+         * 初始化遊戲。
+         * 網頁載入完成後，將所有狀態印到控制台，
+         * 並依照初始 State 渲染畫面。
+         */
+        function init() {
+            console.table([
+                {
+                    狀態變數: 'selectedSticker',
+                    初始值: selectedSticker
+                },
+                {
+                    狀態變數: 'startSlotSticker',
+                    初始值: startSlotSticker
+                },
+                {
+                    狀態變數: 'endSlotSticker',
+                    初始值: endSlotSticker
+                },
+                {
+                    狀態變數: 'score',
+                    初始值: score
+                },
+                {
+                    狀態變數: 'time',
+                    初始值: time
+                },
+                {
+                    狀態變數: 'gameState',
+                    初始值: gameState
+                }
+            ]);
+
+            render();
+        }
+
+
+        /* ==================================================
+           3. 畫面渲染與更新（Render）
+           ================================================== */
+
+        /**
+         * 根據目前的全域 State 更新網頁畫面。
+         *
+         * 所有 classList、appendChild 等 DOM 畫面操作，
+         * 全部集中在這個函式中。
+         */
+        function render() {
+            // 取得所有穴位貼紙
+            const stickers = document.querySelectorAll('.sticker');
+
+            // 取得起點空位
+            const startSlot = document.querySelector('#startSlot');
+
+            // 取得終點空位
+            const endSlot = document.querySelector('#endSlot');
+
+            // 取得底部貼紙盒區域
+            const stickerArea = document.querySelector('#stickerArea');
+
+            /*
+                逐一檢查每張貼紙，
+                讓它的外觀與位置反映目前的 State。
+            */
+            stickers.forEach(function (sticker) {
+                /*
+                    1. 渲染貼紙高亮狀態
+
+                    當貼紙 ID 等於 selectedSticker 時，
+                    加上 selected 類別。
+
+                    其他貼紙則移除 selected 類別。
+                */
+                if (sticker.id === selectedSticker) {
+                    sticker.classList.add('selected');
+                } else {
+                    sticker.classList.remove('selected');
+                }
+
+                /*
+                    2. 渲染貼紙位置
+
+                    若貼紙 ID 等於 startSlotSticker，
+                    將貼紙搬到起點空位。
+                */
+                if (sticker.id === startSlotSticker) {
+                    startSlot.appendChild(sticker);
+                }
+
+                /*
+                    若貼紙 ID 等於 endSlotSticker，
+                    將貼紙搬到終點空位。
+                */
+                else if (sticker.id === endSlotSticker) {
+                    endSlot.appendChild(sticker);
+                }
+
+                /*
+                    如果貼紙既不在起點，也不在終點，
+                    就將它搬回底部貼紙盒。
+                */
+                else {
+                    stickerArea.appendChild(sticker);
+                }
+            });
+        }
+
+
+        /* ==================================================
+           4. 遊戲邏輯（Logic）
+           ================================================== */
+
+        // 本階段直接在事件回呼函式中修改 State
+
+
+        /* ==================================================
+           5. 使用者事件監聽（Events）
+           ================================================== */
+
+        // 取得所有具有 sticker 類別的穴位貼紙
+        const stickers = document.querySelectorAll('.sticker');
+
+        // 取得起點空位
+        const startSlot = document.querySelector('#startSlot');
+
+        // 取得終點空位
+        const endSlot = document.querySelector('#endSlot');
+
+
+        // 為每一張穴位貼紙綁定點擊事件
+        stickers.forEach(function (sticker) {
+            sticker.addEventListener('click', function () {
+                // 將被點擊貼紙的 ID 存入 selectedSticker
+                selectedSticker = sticker.id;
+
+                console.log(
+                    '[狀態變更] 當前選中貼紙:',
+                    selectedSticker
+                );
+
+                console.log({
+                    selectedSticker,
+                    startSlotSticker,
+                    endSlotSticker,
+                    score,
+                    time,
+                    gameState
+                });
+
+                // State 改變後，統一呼叫 render 更新畫面
+                render();
+            });
+        });
+
+
+        // 為起點空位綁定點擊事件
+        startSlot.addEventListener('click', function () {
+            // 只有目前已選取貼紙時，才修改起點狀態
+            if (selectedSticker !== null) {
+                // 將目前選中的貼紙 ID 存入起點空位
+                startSlotSticker = selectedSticker;
+
+                /*
+                    同一張貼紙不能同時存在於起點與終點。
+
+                    如果目前選中的貼紙原本位於終點，
+                    就清除終點所紀錄的貼紙。
+                */
+                if (endSlotSticker === selectedSticker) {
+                    endSlotSticker = null;
+                }
+
+                console.log(
+                    '[狀態變更] 起點空位已記錄:',
+                    startSlotSticker
+                );
+
+                // 完成放置後，取消目前選中的貼紙
+                selectedSticker = null;
+
+                console.log({
+                    selectedSticker,
+                    startSlotSticker,
+                    endSlotSticker,
+                    score,
+                    time,
+                    gameState
+                });
+
+                // State 改變後，統一呼叫 render 更新畫面
+                render();
+            } else {
+                console.log(
+                    '[狀態未變更] 起點空位：請先選擇一張貼紙'
+                );
+            }
+        });
+
+
+        // 為終點空位綁定點擊事件
+        endSlot.addEventListener('click', function () {
+            // 只有目前已選取貼紙時，才修改終點狀態
+            if (selectedSticker !== null) {
+                // 將目前選中的貼紙 ID 存入終點空位
+                endSlotSticker = selectedSticker;
+
+                /*
+                    同一張貼紙不能同時存在於起點與終點。
+
+                    如果目前選中的貼紙原本位於起點，
+                    就清除起點所紀錄的貼紙。
+                */
+                if (startSlotSticker === selectedSticker) {
+                    startSlotSticker = null;
+                }
+
+                console.log(
+                    '[狀態變更] 終點空位已記錄:',
+                    endSlotSticker
+                );
+
+                // 完成放置後，取消目前選中的貼紙
+                selectedSticker = null;
+
+                console.log({
+                    selectedSticker,
+                    startSlotSticker,
+                    endSlotSticker,
+                    score,
+                    time,
+                    gameState
+                });
+
+                // State 改變後，統一呼叫 render 更新畫面
+                render();
+            } else {
+                console.log(
+                    '[狀態未變更] 終點空位：請先選擇一張貼紙'
+                );
+            }
+        });
+
+
+        /* ==================================================
+           6. 其他輔助功能
+           ================================================== */
+
+        // 本階段暫時不需要其他輔助功能
+
+
+        // 網頁程式載入後，自動執行初始化
+        init();
+    </script>
+</body>
+</html>
+```

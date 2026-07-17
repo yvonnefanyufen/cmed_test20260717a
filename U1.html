@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+
+    <!--
+        讓網頁寬度配合手機螢幕，
+        是響應式網頁設計的重要設定。
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>經絡穴位互動遊戲</title>
+
+    <style>
+        /* ==================================================
+           第一區：全域基礎設定
+           ================================================== */
+
+        /*
+            box-sizing: border-box
+            讓元素設定寬度時，邊框與內距都計算在寬度內，
+            可以降低版面破版的機率。
+        */
+        * {
+            box-sizing: border-box;
+        }
+
+        /*
+            清除瀏覽器預設的外距，
+            並設定整個頁面的中文字體、背景與文字顏色。
+        */
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+
+            font-family:
+                "Noto Sans TC",
+                "Microsoft JhengHei",
+                Arial,
+                sans-serif;
+
+            color: #203936;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    rgba(192, 224, 211, 0.55),
+                    transparent 38%
+                ),
+                linear-gradient(
+                    135deg,
+                    #f7f1e4 0%,
+                    #e4f1ec 100%
+                );
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+        /* ==================================================
+           第二區：整個遊戲主區域
+           ================================================== */
+
+        /*
+            body 裡唯一的 main，
+            作為整個遊戲的主要卡片容器。
+        */
+        main {
+            width: min(100%, 820px);
+            padding: clamp(20px, 5vw, 42px);
+
+            background-color: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(55, 100, 91, 0.15);
+            border-radius: 28px;
+
+            box-shadow:
+                0 20px 50px rgba(40, 72, 66, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+            backdrop-filter: blur(10px);
+        }
+
+
+        /* ==================================================
+           第三區：標題與分數資訊
+           ================================================== */
+
+        header {
+            margin-bottom: 26px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            color: #254b45;
+            font-size: clamp(28px, 5vw, 42px);
+            letter-spacing: 0.12em;
+        }
+
+        header > p {
+            margin: 0;
+            color: #66827c;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /*
+            header 內的 section，
+            用來放置分數與時間資訊。
+        */
+        header section {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+
+            margin-top: 24px;
+        }
+
+        header section p {
+            flex: 1;
+            margin: 0;
+            padding: 14px 18px;
+
+            color: #31534d;
+            background-color: #edf6f2;
+            border: 1px solid #d2e6de;
+            border-radius: 16px;
+
+            font-size: clamp(14px, 3vw, 17px);
+            font-weight: 700;
+        }
+
+
+        /* ==================================================
+           第四區：經絡遊戲畫面
+           ================================================== */
+
+        /*
+            main 中的第一個主要 section，
+            作為經絡線及兩個穴位空位的容器。
+        */
+        main > section:first-of-type {
+            position: relative;
+
+            min-height: 260px;
+            margin-bottom: 26px;
+            padding: 42px 20px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            overflow: hidden;
+            background:
+                linear-gradient(
+                    rgba(255, 255, 255, 0.5),
+                    rgba(255, 255, 255, 0.5)
+                ),
+                repeating-linear-gradient(
+                    45deg,
+                    rgba(111, 159, 149, 0.05) 0,
+                    rgba(111, 159, 149, 0.05) 10px,
+                    transparent 10px,
+                    transparent 20px
+                );
+
+            border: 1px solid #d8e8e1;
+            border-radius: 24px;
+        }
+
+        /*
+            經絡線。
+
+            因為 HTML 不使用 class，
+            所以使用 section 裡的 hr 作為經絡線。
+        */
+        main > section:first-of-type hr {
+            position: absolute;
+            top: 50%;
+            left: 13%;
+            right: 13%;
+
+            height: 8px;
+            margin: 0;
+
+            border: 0;
+            border-radius: 999px;
+
+            background:
+                repeating-linear-gradient(
+                    90deg,
+                    #4b8a7d 0,
+                    #4b8a7d 16px,
+                    #77b2a5 16px,
+                    #77b2a5 25px
+                );
+
+            box-shadow:
+                0 0 0 4px rgba(105, 165, 151, 0.12),
+                0 5px 15px rgba(50, 105, 94, 0.18);
+
+            transform: translateY(-50%);
+        }
+
+        /*
+            經絡線上的兩個虛線圓圈。
+
+            section 中的兩個 figure，
+            分別代表起點與終點穴位空位。
+        */
+        main > section:first-of-type figure {
+            position: relative;
+            z-index: 1;
+
+            width: clamp(92px, 18vw, 126px);
+            aspect-ratio: 1;
+            margin: 0;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            color: #56756e;
+            background-color: rgba(250, 253, 251, 0.96);
+            border: 3px dashed #83aa9f;
+            border-radius: 50%;
+
+            box-shadow:
+                0 8px 20px rgba(60, 103, 94, 0.12),
+                inset 0 0 0 7px rgba(219, 237, 230, 0.6);
+
+            text-align: center;
+        }
+
+        main > section:first-of-type figcaption {
+            padding: 10px;
+
+            font-size: clamp(13px, 2.6vw, 16px);
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+
+        /* ==================================================
+           第五區：訊息提示區
+           ================================================== */
+
+        /*
+            main 中唯一的 aside，
+            作為淡淡的遊戲訊息提示區。
+        */
+        aside {
+            margin-bottom: 26px;
+            padding: 15px 20px;
+
+            color: #69807b;
+            background-color: rgba(239, 246, 243, 0.75);
+            border-left: 5px solid #9cc3b7;
+            border-radius: 12px;
+
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        aside p {
+            margin: 0;
+        }
+
+
+        /* ==================================================
+           第六區：穴位貼紙盒
+           ================================================== */
+
+        /*
+            main 中的第二個主要 section，
+            用來放置三張穴位貼紙。
+        */
+        main > section:nth-of-type(2) {
+            padding: 22px;
+
+            background-color: #f5eee0;
+            border: 1px solid #e8dcc6;
+            border-radius: 22px;
+
+            box-shadow: inset 0 2px 7px rgba(99, 76, 45, 0.06);
+        }
+
+        main > section:nth-of-type(2) h2 {
+            margin: 0 0 18px;
+
+            color: #63543f;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 0.1em;
+        }
+
+        /*
+            使用 nav 表示這是一組未來可以進行互動選擇的元件。
+        */
+        nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        /*
+            三個 button 是穴位貼紙。
+
+            button 本身在這個階段不包含功能，
+            也沒有 JavaScript 事件。
+        */
+        button {
+            min-height: 74px;
+            padding: 14px;
+
+            color: #315b52;
+            background:
+                linear-gradient(
+                    145deg,
+                    #ffffff 0%,
+                    #e7f3ee 100%
+                );
+
+            border: 2px solid #afd1c6;
+            border-radius: 18px;
+
+            box-shadow:
+                0 7px 14px rgba(63, 104, 95, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+            font: inherit;
+            font-size: clamp(17px, 3vw, 21px);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+
+            /*
+                此處只設定滑鼠游標外觀，
+                不會產生任何遊戲功能。
+            */
+            cursor: default;
+        }
+
+
+        /* ==================================================
+           第七區：預留的選取狀態
+           ================================================== */
+
+        /*
+            這個 .selected 類別目前沒有套用在任何 HTML 元素上。
+
+            未來加入 JavaScript 後，
+            可以將 selected 類別加入被玩家選中的穴位貼紙，
+            使貼紙顯示亮黃色外框與微發光效果。
+        */
+        .selected {
+            border-color: #ffd83d;
+            outline: 3px solid rgba(255, 216, 61, 0.45);
+
+            box-shadow:
+                0 0 8px rgba(255, 216, 61, 0.85),
+                0 0 20px rgba(255, 216, 61, 0.45);
+        }
+
+
+        /* ==================================================
+           第八區：手機響應式設計
+           ================================================== */
+
+        /*
+            螢幕寬度小於或等於 600px 時，
+            自動切換為較適合手機的配置。
+        */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+                align-items: flex-start;
+            }
+
+            main {
+                padding: 22px 16px;
+                border-radius: 22px;
+            }
+
+            header section {
+                flex-direction: column;
+            }
+
+            main > section:first-of-type {
+                min-height: 350px;
+                padding: 34px 16px;
+
+                flex-direction: column;
+            }
+
+            /*
+                手機版將經絡線改成垂直方向。
+            */
+            main > section:first-of-type hr {
+                top: 13%;
+                bottom: 13%;
+                left: 50%;
+                right: auto;
+
+                width: 8px;
+                height: auto;
+
+                background:
+                    repeating-linear-gradient(
+                        180deg,
+                        #4b8a7d 0,
+                        #4b8a7d 16px,
+                        #77b2a5 16px,
+                        #77b2a5 25px
+                    );
+
+                transform: translateX(-50%);
+            }
+
+            nav {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                min-height: 62px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ==================================================
+         HTML 網頁結構區
+         此階段只有靜態畫面，沒有任何 JavaScript。
+         ================================================== -->
+
+    <main>
+        <!-- 遊戲標題與狀態資訊 -->
+        <header>
+            <h1>經絡尋穴</h1>
+
+            <p>
+                將正確的穴位貼紙放到經絡線上的空位，
+                完成中醫經絡挑戰。
+            </p>
+
+            <section>
+                <p>分數：0 分</p>
+                <p>時間：00：00</p>
+            </section>
+        </header>
+
+        <!-- 經絡線遊戲區域 -->
+        <section>
+            <!-- 起點穴位空位 -->
+            <figure>
+                <figcaption>起點穴位</figcaption>
+            </figure>
+
+            <!-- 使用水平線元素呈現經絡線 -->
+            <hr>
+
+            <!-- 終點穴位空位 -->
+            <figure>
+                <figcaption>終點穴位</figcaption>
+            </figure>
+        </section>
+
+        <!-- 淡色訊息提示區 -->
+        <aside>
+            <p>提示訊息：請觀察經絡線，準備選擇正確的穴位貼紙。</p>
+        </aside>
+
+        <!-- 穴位貼紙盒 -->
+        <section>
+            <h2>穴位貼紙盒</h2>
+
+            <nav aria-label="穴位貼紙">
+                <button type="button">中府</button>
+                <button type="button">少商</button>
+                <button type="button">太淵</button>
+            </nav>
+        </section>
+    </main>
+</body>
+</html>
